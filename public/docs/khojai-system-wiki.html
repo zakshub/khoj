@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>KhojAI System Wiki</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 18mm;
+    }
+
+    :root {
+      --ink: #12131a;
+      --muted: #5b6073;
+      --line: #d9dce7;
+      --paper: #ffffff;
+      --soft: #f5f6fb;
+      --violet: #6f55e8;
+      --green: #0f9f7a;
+      --amber: #b66a00;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      font-size: 11.5pt;
+      line-height: 1.55;
+    }
+
+    .page {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 28px;
+    }
+
+    header {
+      border-bottom: 2px solid var(--ink);
+      padding-bottom: 18px;
+      margin-bottom: 22px;
+    }
+
+    .kicker {
+      color: var(--violet);
+      font-size: 9.5pt;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 8px 0 6px;
+      font-size: 30pt;
+      line-height: 1.04;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12pt;
+    }
+
+    h2 {
+      margin: 26px 0 8px;
+      font-size: 18pt;
+      line-height: 1.2;
+      break-after: avoid;
+    }
+
+    h3 {
+      margin: 18px 0 6px;
+      font-size: 13pt;
+      break-after: avoid;
+    }
+
+    p {
+      margin: 0 0 9px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0 16px;
+      break-inside: avoid;
+    }
+
+    th,
+    td {
+      border: 1px solid var(--line);
+      padding: 8px 9px;
+      vertical-align: top;
+      text-align: left;
+    }
+
+    th {
+      background: var(--soft);
+      font-size: 9.5pt;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #303447;
+    }
+
+    code,
+    pre {
+      font-family: Consolas, "SFMono-Regular", Menlo, monospace;
+      font-size: 9.7pt;
+    }
+
+    pre {
+      white-space: pre-wrap;
+      background: #10131f;
+      color: #eef1ff;
+      border-radius: 8px;
+      padding: 12px;
+      margin: 10px 0 16px;
+      break-inside: avoid;
+    }
+
+    .callout {
+      border-left: 4px solid var(--violet);
+      background: var(--soft);
+      padding: 10px 12px;
+      margin: 12px 0 16px;
+      break-inside: avoid;
+    }
+
+    .status {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 9pt;
+      font-weight: 700;
+    }
+
+    .confirmed {
+      background: #e6fbf4;
+      color: var(--green);
+    }
+
+    .expected {
+      background: #fff4df;
+      color: var(--amber);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 10px 0 16px;
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+      background: #fff;
+      break-inside: avoid;
+    }
+
+    .card strong {
+      display: block;
+      margin-bottom: 3px;
+    }
+
+    footer {
+      margin-top: 30px;
+      padding-top: 12px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 9pt;
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header>
+      <div class="kicker">KhojAI System Wiki</div>
+      <h1>Architecture, Agents, Automation, and Operating Notes</h1>
+      <p class="subtitle">Prepared for the Khoj STEAM School execution stack. Version 1.0, 31 May 2026.</p>
+    </header>
+
+    <section>
+      <h2>Purpose</h2>
+      <p>
+        <strong>KhojAI</strong> is the automated work engine behind Khoj STEAM School. It is intended to generate
+        educational content, run support agents, maintain a WhatsApp teacher experience, store conversations and
+        lesson state, and publish outputs for the public Khoj product experience.
+      </p>
+      <div class="callout">
+        The public product experience should live at <code>https://khoj.zuhaib.pro/</code>. The internal tracking
+        dashboard should remain separate at <code>https://lab.zuhaib.pro/khoj</code>.
+      </div>
+    </section>
+
+    <section>
+      <h2>Known Deployment Shape</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Area</th>
+            <th>Status</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>/var/www/khojai</code></td>
+            <td><span class="status expected">VPS expected</span></td>
+            <td>Server-side project root provided as the live KhojAI work engine.</td>
+          </tr>
+          <tr>
+            <td>Local mirror</td>
+            <td><span class="status confirmed">Confirmed locally</span></td>
+            <td><code>khoj/claude - code/khojai/khojai</code> contains scheduler, package metadata, Baileys teacher, and old Meta bot.</td>
+          </tr>
+          <tr>
+            <td>Website process</td>
+            <td><span class="status expected">VPS expected</span></td>
+            <td>Next.js website is configured for port <code>3001</code> through <code>next start -p 3001</code>.</td>
+          </tr>
+          <tr>
+            <td>Teacher bot</td>
+            <td><span class="status confirmed">Confirmed locally</span></td>
+            <td>Baileys WhatsApp teacher reads and writes <code>khoj.db</code>, uses Claude, and handles text plus voice transcription.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Folder Map</h2>
+      <pre>/var/www/khojai/
+|-- app/                  Next.js website
+|-- agents/               AI agents: curriculum, content, visual, SEO, QA, director
+|-- aiteacher/            WhatsApp AI teacher using Baileys
+|-- bot/                  Old Meta Cloud API bot, currently treated as legacy
+|-- content/output/       Generated images, carousel copy, lesson payloads
+|-- logs/                 Scheduler, pipeline, bot, and agent logs
+|-- pipeline.js           Older pipeline entrypoint
+|-- scheduler.js          Current scheduler, every 2 days plus support runs
+|-- khoj.db               SQLite database for content, users, and conversations
+|-- .env                  API keys and runtime configuration
+|-- next.config.mjs       Next.js configuration
+|-- package.json          Node dependencies and scripts</pre>
+      <p>
+        Local inspection confirms <code>scheduler.js</code>, <code>package.json</code>, <code>aiteacher/index.js</code>,
+        and <code>bot/teacher.js</code>. The local mirror does not currently expose the full <code>app/</code>,
+        <code>agents/</code>, <code>content/output/</code>, <code>pipeline.js</code>, or database files.
+      </p>
+    </section>
+
+    <section>
+      <h2>Runtime Components</h2>
+      <div class="grid">
+        <div class="card">
+          <strong>Next.js Website</strong>
+          Serves the public KhojAI web experience. Package scripts define <code>dev</code>, <code>build</code>, and
+          <code>start</code> on port <code>3001</code>.
+        </div>
+        <div class="card">
+          <strong>Scheduler</strong>
+          Uses <code>node-cron</code>. Runs content pipeline every two days at midnight and support agents Monday and
+          Thursday at 3 AM.
+        </div>
+        <div class="card">
+          <strong>AI Teacher</strong>
+          Uses WhatsApp Baileys session auth, Claude for replies, OpenAI Whisper for voice transcription, and SQLite
+          tables for users and conversation history.
+        </div>
+        <div class="card">
+          <strong>Legacy Meta Bot</strong>
+          Express webhook implementation for Meta Cloud API. It is useful as a reference, but the active teacher path
+          appears to be <code>aiteacher/index.js</code>.
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Scheduler Behavior</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Trigger</th>
+            <th>Schedule</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Content pipeline</td>
+            <td><code>0 0 */2 * *</code></td>
+            <td>Runs <code>runContentPipeline()</code> every two days at midnight.</td>
+          </tr>
+          <tr>
+            <td>Support agents</td>
+            <td><code>0 3 * * 1,4</code></td>
+            <td>Runs <code>runSupportAgents()</code> every Monday and Thursday at 3 AM.</td>
+          </tr>
+          <tr>
+            <td>Manual pipeline</td>
+            <td><code>node scheduler.js --now</code></td>
+            <td>Immediately runs the content pipeline.</td>
+          </tr>
+          <tr>
+            <td>Manual support</td>
+            <td><code>node scheduler.js --support</code></td>
+            <td>Immediately runs support agents.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Database Notes</h2>
+      <p>The confirmed local teacher code creates and uses these SQLite tables:</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Table</th>
+            <th>Purpose</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>wa_conversations</code></td>
+            <td>Stores WhatsApp user and assistant message history.</td>
+          </tr>
+          <tr>
+            <td><code>wa_users</code></td>
+            <td>Stores phone, name, relation, child profile, language, and message count.</td>
+          </tr>
+          <tr>
+            <td><code>conversations</code></td>
+            <td>Used by the legacy Meta bot for webhook conversation history.</td>
+          </tr>
+          <tr>
+            <td><code>students</code></td>
+            <td>Used by the legacy Meta bot for parent/student profile data.</td>
+          </tr>
+          <tr>
+            <td><code>content</code></td>
+            <td>Referenced by both teacher paths for latest lesson context. Schema should be verified on VPS.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Dependency Snapshot</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Dependency</th>
+            <th>Role</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><code>next</code>, <code>react</code></td><td>Public website UI.</td></tr>
+          <tr><td><code>node-cron</code></td><td>Scheduled automation.</td></tr>
+          <tr><td><code>@anthropic-ai/sdk</code></td><td>Claude-powered teacher and agents.</td></tr>
+          <tr><td><code>@google/generative-ai</code></td><td>Gemini provider support for agent work.</td></tr>
+          <tr><td><code>@whiskeysockets/baileys</code></td><td>WhatsApp web session teacher.</td></tr>
+          <tr><td><code>better-sqlite3</code></td><td>Local SQLite storage.</td></tr>
+          <tr><td><code>axios</code>, <code>form-data</code></td><td>HTTP calls and voice transcription upload.</td></tr>
+          <tr><td><code>express</code></td><td>Legacy Meta bot webhook server.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Operational Risks</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Risk</th>
+            <th>Why It Matters</th>
+            <th>Recommended Fix</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Auth/session files in local mirror</td>
+            <td>WhatsApp Baileys auth files can expose session state.</td>
+            <td>Keep <code>aiteacher/auth/</code> out of Git and rotate sessions if exposed.</td>
+          </tr>
+          <tr>
+            <td>Hardcoded absolute VPS paths</td>
+            <td>Local and VPS behavior can diverge.</td>
+            <td>Move root paths into <code>.env</code>, with sane defaults.</td>
+          </tr>
+          <tr>
+            <td>Legacy and new bot both present</td>
+            <td>Can confuse deployment and duplicate behavior.</td>
+            <td>Mark <code>bot/</code> as legacy or archive after verifying no process uses it.</td>
+          </tr>
+          <tr>
+            <td>Missing local full website and agents</td>
+            <td>Harder to review or rebuild from local source.</td>
+            <td>Sync VPS source into repo, excluding secrets, logs, database, and generated outputs.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Recommended Next Actions</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Priority</th>
+            <th>Action</th>
+            <th>Outcome</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>P0</td>
+            <td>Create a clean Git repo for <code>khojai</code> with secrets excluded.</td>
+            <td>VPS and local code stop drifting.</td>
+          </tr>
+          <tr>
+            <td>P0</td>
+            <td>Add <code>.gitignore</code> for <code>.env</code>, <code>khoj.db</code>, <code>logs/</code>, <code>.next/</code>, and <code>aiteacher/auth/</code>.</td>
+            <td>Prevents secret/session leakage.</td>
+          </tr>
+          <tr>
+            <td>P1</td>
+            <td>Document PM2 process names, ports, and Nginx routes on VPS.</td>
+            <td>Clear deploy and recovery map.</td>
+          </tr>
+          <tr>
+            <td>P1</td>
+            <td>Verify <code>agents/director</code>, pipeline outputs, and database content schema on VPS.</td>
+            <td>Completes agent workflow documentation.</td>
+          </tr>
+          <tr>
+            <td>P2</td>
+            <td>Expose selected public outputs from KhojAI into <code>https://khoj.zuhaib.pro/</code>.</td>
+            <td>Parents see product content, not only infrastructure status.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <footer>
+      This wiki intentionally excludes API keys, tokens, database contents, WhatsApp session files, and private phone numbers.
+      Confirmed local source: <code>khoj/claude - code/khojai/khojai</code>. VPS structure based on the supplied <code>/var/www/khojai</code> map.
+    </footer>
+  </main>
+</body>
+</html>

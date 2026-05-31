@@ -211,6 +211,7 @@ function renderProductPage({ status, content }) {
           <li>Age Group: ${content.mission_of_day?.age_group || "Nano"}</li>
         </ul>
         <div class="cta">
+          <a class="btn" href="/docs/khojai-system-wiki.pdf" target="_blank" rel="noreferrer">System Wiki PDF</a>
           <a class="btn" href="/status">Live JSON Status</a>
           <a class="btn" href="/ops">Ops Console</a>
           <a class="btn" href="https://lab.zuhaib.pro/khoj" target="_blank" rel="noreferrer">Tracking Control Tower</a>
@@ -264,6 +265,16 @@ const server = http.createServer((req, res) => {
     if (req.url === "/health") {
       res.writeHead(200, { "Content-Type": "application/json" });
       return res.end(JSON.stringify({ ok: true, service: "khoj-executor" }));
+    }
+
+    if (req.url === "/docs/khojai-system-wiki.pdf") {
+      const pdfPath = path.join(root, "public", "docs", "khojai-system-wiki.pdf");
+      const pdf = fs.readFileSync(pdfPath);
+      res.writeHead(200, {
+        "Content-Type": "application/pdf",
+        "Content-Disposition": "inline; filename=\"khojai-system-wiki.pdf\""
+      });
+      return res.end(pdf);
     }
 
     if (req.url === "/run-cycle" && (req.method === "POST" || req.method === "GET")) {
