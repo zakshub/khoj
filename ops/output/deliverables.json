@@ -1,0 +1,26 @@
+[
+  {
+    "id": "W1-D1",
+    "name": "3 Urdu Nano Carousels",
+    "status": "in_progress",
+    "percent": 67
+  },
+  {
+    "id": "W1-D2",
+    "name": "Instagram profile setup pack",
+    "status": "in_progress",
+    "percent": 50
+  },
+  {
+    "id": "W1-D3",
+    "name": "WhatsApp welcome message",
+    "status": "done",
+    "percent": 100
+  },
+  {
+    "id": "W1-D4",
+    "name": "4-week content calendar",
+    "status": "in_progress",
+    "percent": 40
+  }
+]

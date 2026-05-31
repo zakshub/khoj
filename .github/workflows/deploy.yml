@@ -1,0 +1,26 @@
+name: Deploy Khoj Portal
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: 22
+          script: |
+            set -e
+            cd /var/www/khoj
+            git pull --ff-only origin main
+            pnpm install --frozen-lockfile
+            pnpm build
+            pm2 restart khoj || pm2 start "pnpm --dir /var/www/khoj exec next start -p 3000" --name khoj
+            pm2 save

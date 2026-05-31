@@ -1,0 +1,67 @@
+{
+  "program": "KHOJ STEAM SCHOOL",
+  "timezone": "Asia/Karachi",
+  "start_date": "2026-05-31",
+  "focus": "Nano 4-7 only",
+  "phase": {
+    "current": "Phase 1",
+    "status": "active",
+    "title": "Content Proof"
+  },
+  "long_term_targets": [
+    {
+      "name": "Month 1",
+      "target_date": "2026-06-30",
+      "goal": "Content proof + first parent community"
+    },
+    {
+      "name": "Month 2",
+      "target_date": "2026-07-31",
+      "goal": "Reels start + Micro pilot"
+    },
+    {
+      "name": "Month 3",
+      "target_date": "2026-08-31",
+      "goal": "WhatsApp automation MVP"
+    },
+    {
+      "name": "Month 6",
+      "target_date": "2026-11-30",
+      "goal": "Web portal + 4 age-group framework"
+    }
+  ],
+  "week_1": {
+    "window": "2026-05-31 to 2026-06-06",
+    "deliverables": [
+      {
+        "id": "W1-D1",
+        "name": "3 Urdu Nano Carousels",
+        "status": "in_progress",
+        "percent": 67
+      },
+      {
+        "id": "W1-D2",
+        "name": "Instagram profile setup pack",
+        "status": "in_progress",
+        "percent": 50
+      },
+      {
+        "id": "W1-D3",
+        "name": "WhatsApp welcome message",
+        "status": "done",
+        "percent": 100
+      },
+      {
+        "id": "W1-D4",
+        "name": "4-week content calendar",
+        "status": "in_progress",
+        "percent": 40
+      }
+    ]
+  },
+  "topics_nano": [
+    "آسمان نیلا کیوں ہے؟",
+    "پانی اوپر کیسے جاتا ہے؟",
+    "چاند ہمارے ساتھ کیوں چلتا ہے؟"
+  ]
+}

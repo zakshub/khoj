@@ -1,0 +1,35 @@
+{
+  "orchestrator": {
+    "name": "khoj-orchestrator",
+    "role": "assign tasks, run schedule, collect outputs, publish status",
+    "schedule": {
+      "executor": "0 */2 * * *",
+      "tracker": "30 */2 * * *",
+      "reporter": "0 */4 * * *"
+    }
+  },
+  "workers": [
+    {
+      "id": "executor",
+      "mission": "work on current plan tasks and generate output artifacts",
+      "outputs": [
+        "ops/output/execution-log.json",
+        "ops/output/deliverables.json"
+      ]
+    },
+    {
+      "id": "tracker",
+      "mission": "convert latest outputs into dashboard status payload",
+      "outputs": [
+        "public/data/status.json"
+      ]
+    },
+    {
+      "id": "reporter",
+      "mission": "send structured WhatsApp summary every 4 hours",
+      "outputs": [
+        "ops/output/whatsapp-log.json"
+      ]
+    }
+  ]
+}

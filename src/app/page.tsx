@@ -1,13 +1,5 @@
-const progressPercent = 55;
-const achievedPercent = 42;
-const remainingPercent = 58;
-
-const summaryCards = [
-  { label: "Overall Completion", value: "55%", tone: "violet" },
-  { label: "Current Phase", value: "Phase 1", tone: "teal" },
-  { label: "Active Workstreams", value: "6", tone: "amber" },
-  { label: "ETA To Phase 1", value: "21 Days", tone: "green" },
-];
+import { readFile } from "fs/promises";
+import path from "path";
 
 const goalUpdates = [
   { item: "Deployment foundation on production", status: "Done", pct: 100 },
@@ -16,24 +8,17 @@ const goalUpdates = [
   { item: "Weekly content tracker integration", status: "In Progress", pct: 40 },
 ];
 
-const ongoing = [
-  "Phase 1 dashboard execution and data blocks",
-  "Nano stream: 4-7 age content roadmap structure",
-  "Status-to-deliverables mapping for daily updates",
-];
-
-const upcoming = [
-  "Final logo placement and brand lockups",
-  "Week 1 carousel copy blocks wired into portal",
-  "KPI drill-down pages for monthly and weekly views",
-];
-
-const remaining = [
-  "Charts with real execution numbers",
-  "Daily update protocol with timestamps",
-  "Parent-community traction tracker",
-  "Mission completion analytics",
-];
+type StatusData = {
+  last_updated: string;
+  phase: string;
+  overall_percent: number;
+  achieved_percent: number;
+  remaining_percent: number;
+  eta_days: number;
+  currently_ongoing: string[];
+  upcoming: string[];
+  remaining_work: string[];
+};
 
 const phasePlan = [
   { phase: "Phase 1", target: "June 2026", status: "Active", pct: 62 },
@@ -49,6 +34,21 @@ const weeklyVelocity = [
   { week: "W4", value: 72 },
 ];
 
+const weekOneDeliverables = [
+  { label: "3 Urdu Nano carousels (7-10 slides)", status: "In Progress", pct: 67 },
+  { label: "Instagram profile setup pack", status: "In Progress", pct: 50 },
+  { label: "WhatsApp welcome message", status: "Ready", pct: 100 },
+  { label: "4-week Nano content calendar", status: "In Progress", pct: 40 },
+];
+
+const originalPlanTrack = [
+  { label: "Phase 1: Content proof", state: "Active" },
+  { label: "Phase 2: Community seed", state: "Queued" },
+  { label: "Phase 3: Instagram growth", state: "Queued" },
+  { label: "Phase 4: Scale + automation", state: "Planned" },
+  { label: "Phase 5: Platform", state: "Planned" },
+];
+
 function toneClass(tone: string): string {
   switch (tone) {
     case "teal":
@@ -62,7 +62,52 @@ function toneClass(tone: string): string {
   }
 }
 
-export default function Home() {
+async function readStatusData(): Promise<StatusData> {
+  const file = path.join(process.cwd(), "public", "data", "status.json");
+  try {
+    const raw = await readFile(file, "utf8");
+    return JSON.parse(raw) as StatusData;
+  } catch {
+    return {
+      last_updated: new Date().toISOString(),
+      phase: "Phase 1 - Content Proof",
+      overall_percent: 55,
+      achieved_percent: 42,
+      remaining_percent: 58,
+      eta_days: 21,
+      currently_ongoing: [
+        "Phase 1 dashboard execution and data blocks",
+        "Nano content roadmap structure",
+        "Status-to-deliverables mapping for daily updates"
+      ],
+      upcoming: [
+        "Final logo placement and lockups",
+        "Week 1 carousel copy blocks wired into portal",
+        "Weekly and monthly KPI drill-down pages"
+      ],
+      remaining_work: [
+        "Real execution numbers in charts",
+        "Timestamped daily update protocol",
+        "Parent-community traction tracker",
+        "Mission completion analytics"
+      ]
+    };
+  }
+}
+
+export default async function Home() {
+  const status = await readStatusData();
+  const progressPercent = status.overall_percent;
+  const achievedPercent = status.achieved_percent;
+  const remainingPercent = status.remaining_percent;
+
+  const summaryCards = [
+    { label: "Overall Completion", value: `${status.overall_percent}%`, tone: "violet" },
+    { label: "Current Phase", value: status.phase.split("-")[0].trim(), tone: "teal" },
+    { label: "Active Workstreams", value: String(status.currently_ongoing.length), tone: "amber" },
+    { label: "ETA To Phase 1", value: `${status.eta_days} Days`, tone: "green" },
+  ];
+
   return (
     <main className="portal-shell px-4 py-8 md:px-8">
       <div className="mx-auto max-w-7xl space-y-6">
@@ -83,6 +128,7 @@ export default function Home() {
             <div className="metric-glow rounded-xl border border-[var(--line)] bg-[var(--surface)] p-4">
               <p className="text-xs text-[var(--muted)]">Latest Update</p>
               <p className="mt-1 text-lg font-medium">31 May 2026</p>
+              <p className="mt-1 text-xs text-[var(--muted)]">{status.last_updated}</p>
               <p className="text-xs text-[var(--muted)]">Timezone: PKT</p>
             </div>
           </div>
@@ -165,7 +211,7 @@ export default function Home() {
           <article className="glass-card p-5">
             <h3 className="text-lg font-semibold">Currently Ongoing</h3>
             <ul className="mt-3 space-y-3 text-sm text-[var(--muted)]">
-              {ongoing.map((item) => (
+              {status.currently_ongoing.map((item) => (
                 <li key={item} className="rounded-lg border border-[var(--line)] bg-[var(--surface)] p-3">
                   {item}
                 </li>
@@ -176,7 +222,7 @@ export default function Home() {
           <article className="glass-card p-5">
             <h3 className="text-lg font-semibold">Upcoming</h3>
             <ul className="mt-3 space-y-3 text-sm text-[var(--muted)]">
-              {upcoming.map((item) => (
+              {status.upcoming.map((item) => (
                 <li key={item} className="rounded-lg border border-[var(--line)] bg-[var(--surface)] p-3">
                   {item}
                 </li>
@@ -187,7 +233,7 @@ export default function Home() {
           <article className="glass-card p-5">
             <h3 className="text-lg font-semibold">Remaining Work</h3>
             <ul className="mt-3 space-y-3 text-sm text-[var(--muted)]">
-              {remaining.map((item) => (
+              {status.remaining_work.map((item) => (
                 <li key={item} className="rounded-lg border border-[var(--line)] bg-[var(--surface)] p-3">
                   {item}
                 </li>
@@ -201,7 +247,7 @@ export default function Home() {
               Expected phase-1 completion window:
             </p>
             <p className="mt-1 text-2xl font-semibold text-[var(--violet-bright)]">
-              21 Days
+              {status.eta_days} Days
             </p>
             <div className="mt-4 h-2 rounded-full bg-[#0c0f1e]">
               <div
@@ -264,6 +310,48 @@ export default function Home() {
                 </div>
               ))}
             </div>
+          </article>
+        </section>
+
+        <section className="grid gap-4 lg:grid-cols-5">
+          <article className="glass-card p-5 lg:col-span-3">
+            <div className="mb-4 flex items-end justify-between gap-4">
+              <h3 className="text-lg font-semibold">Original Plan: Week 1 Delivery</h3>
+              <span className="text-xs text-[var(--muted)]">
+                Content Proof Sprint
+              </span>
+            </div>
+            <div className="space-y-4">
+              {weekOneDeliverables.map((item) => (
+                <div key={item.label}>
+                  <div className="mb-2 flex items-center justify-between text-sm">
+                    <p>{item.label}</p>
+                    <span className="text-[var(--muted)]">{item.status}</span>
+                  </div>
+                  <div className="h-2 rounded-full bg-[#0c0f1e]">
+                    <div
+                      className="progress-shimmer h-full rounded-full bg-gradient-to-r from-[var(--teal)] to-[var(--violet-bright)]"
+                      style={{ width: `${item.pct}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </article>
+
+          <article className="glass-card p-5 lg:col-span-2">
+            <h3 className="text-lg font-semibold">Original Plan Track</h3>
+            <ul className="mt-4 space-y-3 text-sm">
+              {originalPlanTrack.map((p) => (
+                <li
+                  key={p.label}
+                  className="flex items-center justify-between rounded-lg border border-[var(--line)] bg-[var(--surface)] px-3 py-2"
+                >
+                  <span>{p.label}</span>
+                  <span className="text-[var(--muted)]">{p.state}</span>
+                </li>
+              ))}
+            </ul>
           </article>
         </section>
       </div>
