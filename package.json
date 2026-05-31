@@ -10,7 +10,8 @@
     "ops:executor": "node ops/scripts/run_executor.js",
     "ops:tracker": "node ops/scripts/run_tracker.js",
     "ops:reporter": "node ops/scripts/run_reporter.js",
-    "ops:cycle": "node ops/scripts/run_executor.js && node ops/scripts/run_tracker.js && node ops/scripts/run_reporter.js"
+    "ops:cycle": "node ops/scripts/run_executor.js && node ops/scripts/run_tracker.js && node ops/scripts/run_reporter.js",
+    "ops:service": "node ops/service/server.js"
   },
   "dependencies": {
     "next": "16.2.6",
