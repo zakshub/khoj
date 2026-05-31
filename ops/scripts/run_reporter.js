@@ -21,16 +21,79 @@ const message = [
   ...status.upcoming.map((x) => `- ${x}`)
 ].join("\n");
 
-const log = {
-  timestamp: new Date().toISOString(),
-  channel: "whatsapp",
-  sent: false,
-  message
-};
+const token = process.env.WHATSAPP_TOKEN;
+const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
+const to = process.env.WHATSAPP_TO;
 
-fs.writeFileSync(
-  path.join(outDir, "whatsapp-log.json"),
-  JSON.stringify(log, null, 2)
-);
+async function sendWhatsAppText() {
+  if (!token || !phoneNumberId || !to) {
+    return {
+      sent: false,
+      error:
+        "Missing env vars. Required: WHATSAPP_TOKEN, WHATSAPP_PHONE_NUMBER_ID, WHATSAPP_TO"
+    };
+  }
 
-console.log("[reporter] prepared WhatsApp payload in ops/output/whatsapp-log.json");
+  try {
+    const url = `https://graph.facebook.com/v20.0/${phoneNumberId}/messages`;
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        messaging_product: "whatsapp",
+        recipient_type: "individual",
+        to,
+        type: "text",
+        text: { preview_url: false, body: message }
+      })
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      return {
+        sent: false,
+        error: data?.error?.message || `HTTP ${res.status}`,
+        raw: data
+      };
+    }
+
+    return {
+      sent: true,
+      message_id: data?.messages?.[0]?.id || null,
+      raw: data
+    };
+  } catch (err) {
+    return {
+      sent: false,
+      error: err instanceof Error ? err.message : String(err)
+    };
+  }
+}
+
+(async () => {
+  const result = await sendWhatsAppText();
+  const log = {
+    timestamp: new Date().toISOString(),
+    channel: "whatsapp",
+    provider: "meta",
+    to: to || null,
+    sent: result.sent,
+    message_id: result.message_id || null,
+    error: result.error || null,
+    message
+  };
+
+  fs.writeFileSync(
+    path.join(outDir, "whatsapp-log.json"),
+    JSON.stringify(log, null, 2)
+  );
+
+  if (result.sent) {
+    console.log("[reporter] WhatsApp message sent successfully");
+  } else {
+    console.log("[reporter] WhatsApp send failed. Check ops/output/whatsapp-log.json");
+  }
+})();
