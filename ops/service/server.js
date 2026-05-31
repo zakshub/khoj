@@ -133,6 +133,19 @@ function renderProductPage({ status, content }) {
     .metric .l { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.13em; }
     .metric .v { margin-top:6px; font-size:30px; font-weight:700; }
     .v1 { color:var(--violet2); } .v2 { color:var(--teal); } .v3 { color:var(--green); } .v4 { color:var(--amber); }
+    .public-intro {
+      display:grid;
+      grid-template-columns:1.2fr .8fr;
+      gap:18px;
+      align-items:center;
+      background:
+        linear-gradient(135deg, rgba(48,212,178,.14), transparent 42%),
+        linear-gradient(180deg,rgba(17,21,35,.9),rgba(11,14,24,.95));
+    }
+    .intro-copy h2 { margin:0 0 10px; font-size:34px; line-height:1.18; }
+    .intro-copy p { margin:0; color:var(--muted); max-width:760px; font-size:15px; line-height:1.65; }
+    .intro-list { display:grid; gap:9px; }
+    .intro-list li { color:#dfe5ff; }
     .section { border:1px solid var(--line); border-radius:18px; background:linear-gradient(180deg,rgba(17,21,35,.88),rgba(11,14,24,.92)); padding:18px; }
     .h2 { margin:0 0 12px; font-size:28px; letter-spacing:-.02em; }
     .cards { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; }
@@ -167,11 +180,18 @@ function renderProductPage({ status, content }) {
       border:1px solid var(--line); border-radius:999px; padding:10px 13px; text-decoration:none; color:var(--text);
       background:#131829; font-size:13px; transition:.2s ease;
     }
+    a.btn.primary {
+      border-color:rgba(48,212,178,.5);
+      background:linear-gradient(90deg,var(--teal),var(--violet2));
+      color:#071019;
+      font-weight:800;
+    }
     a.btn:hover { transform:translateY(-1px); box-shadow:0 0 0 1px rgba(123,97,255,.35),0 10px 24px rgba(123,97,255,.2); }
     footer { text-align:center; color:var(--muted); font-size:12px; padding:8px 0 2px; }
     @media (max-width:980px) {
       h1 { font-size:40px; }
       .hero-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .public-intro { grid-template-columns:1fr; }
       .cards { grid-template-columns:1fr; }
       .panel-grid { grid-template-columns:1fr; }
     }
@@ -193,6 +213,30 @@ function renderProductPage({ status, content }) {
         <article class="metric"><div class="l">Achieved</div><div class="v v3">${status.achieved_percent || 0}%</div></article>
         <article class="metric"><div class="l">ETA</div><div class="v v4">${status.eta_days || 0} Days</div></article>
       </div>
+    </section>
+
+    <section class="section public-intro">
+      <article class="intro-copy">
+        <p class="kicker">PUBLIC SCHOOL EXPERIENCE</p>
+        <h2>Khoj turns screen time into discovery time.</h2>
+        <p>
+          Khoj is an Urdu-first STEAM micro-school for Pakistani children. It uses AI agents to plan lessons,
+          write simple Urdu stories, create home missions, generate visuals, and keep the school moving every day.
+        </p>
+        <p class="urdu-rtl" lang="ur" dir="rtl" style="margin-top:10px">
+          کھوج پاکستانی بچوں کے لیے مفت STEAM اسکول ہے، جہاں موبائل اسکرین صرف وقت ضائع کرنے کے بجائے
+          سائنس، تجسس، کہانی، مشن اور دریافت کا ذریعہ بنتی ہے۔
+        </p>
+        <div class="cta">
+          <a class="btn primary" href="https://khojai.zuhaib.pro/" target="_blank" rel="noreferrer">Open Live Khoj School</a>
+          <a class="btn" href="/docs/khojai-system-wiki.pdf" target="_blank" rel="noreferrer">Read System Wiki</a>
+        </div>
+      </article>
+      <ul class="intro-list">
+        <li><b>For parents:</b> free Urdu STEAM learning for Pakistani children.</li>
+        <li><b>For children:</b> daily curiosity, story, home mission, and reward loop.</li>
+        <li><b>For execution:</b> AI agents generate lessons, visuals, QA, SEO, and updates.</li>
+      </ul>
     </section>
 
     <section class="section">
