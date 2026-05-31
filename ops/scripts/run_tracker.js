@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+const { runPublish } = require("./run_publish");
 
 const root = path.resolve(__dirname, "..", "..");
 const plan = JSON.parse(
@@ -44,3 +45,11 @@ const status = {
 
 fs.writeFileSync(statusPath, JSON.stringify(status, null, 2));
 console.log("[tracker] updated public/data/status.json");
+try {
+  runPublish(root);
+  console.log("[tracker] auto-triggered publish step");
+} catch (err) {
+  console.log(
+    `[tracker] publish trigger failed; will retry in next cycle (${err && err.message ? err.message : "unknown"})`
+  );
+}

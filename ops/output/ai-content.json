@@ -1,0 +1,53 @@
+{
+  "generated_at": "2026-05-31T11:02:25.154Z",
+  "mode": "fallback_provider",
+  "provider": null,
+  "provider_order": [
+    "openai",
+    "gemini",
+    "anthropic"
+  ],
+  "errors": [
+    {
+      "provider": "openai",
+      "error": "OPENAI_API_KEY missing"
+    },
+    {
+      "provider": "gemini",
+      "error": "GEMINI_API_KEY missing"
+    },
+    {
+      "provider": "anthropic",
+      "error": "ANTHROPIC_API_KEY missing"
+    }
+  ],
+  "content": {
+    "cards": [
+      {
+        "ur": "آسمان نیلا کیوں ہے؟",
+        "en": "Why is the sky blue?",
+        "summary_ur": "سورج کی روشنی فضا میں بکھرتی ہے۔ نیلا رنگ زیادہ بکھرتا ہے، اسی لیے آسمان نیلا نظر آتا ہے۔",
+        "mission_ur": "ٹارچ اور شفاف پانی سے روشنی کا تجربہ کریں۔"
+      },
+      {
+        "ur": "پانی اوپر کیسے جاتا ہے؟",
+        "en": "How does water go up?",
+        "summary_ur": "گرمی سے پانی بخارات بنتا ہے۔ یہ اوپر جا کر ٹھنڈا ہو کر بوندوں میں بدلتا ہے۔",
+        "mission_ur": "گرم برتن کی بھاپ کو ڈھکن پر جمع ہوتا دیکھیں۔"
+      },
+      {
+        "ur": "چاند ہمارے ساتھ کیوں چلتا ہے؟",
+        "en": "Why does the moon follow us?",
+        "summary_ur": "چاند بہت دور ہوتا ہے، اس لیے چلتے ہوئے ہمیں لگتا ہے وہ ہمارے ساتھ حرکت کر رہا ہے۔",
+        "mission_ur": "قریب اور دور چیزوں کی حرکت compare کریں۔"
+      }
+    ],
+    "mission_of_day": {
+      "title": "گھر کا سادہ سائنس مشن",
+      "body": "پانی، ٹارچ اور ایک گلاس سے روشنی کا زاویہ بدل کر مشاہدہ کریں۔",
+      "duration_min": 10,
+      "age_group": "Nano (4-7)"
+    },
+    "publish_note": "Fallback content used due to provider issue."
+  }
+}

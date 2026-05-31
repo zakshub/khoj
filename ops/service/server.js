@@ -5,329 +5,251 @@ const { execSync } = require("child_process");
 
 const root = "/var/www/khoj";
 const statusPath = path.join(root, "public", "data", "status.json");
+const contentPath = path.join(root, "public", "content", "latest.json");
 
 function run(cmd) {
   return execSync(cmd, { cwd: root, stdio: "pipe" }).toString();
 }
 
-function readStatus() {
+function readJson(filePath, fallback) {
   try {
-    return JSON.parse(fs.readFileSync(statusPath, "utf8"));
+    return JSON.parse(fs.readFileSync(filePath, "utf8"));
   } catch {
-    return {
-      last_updated: new Date().toISOString(),
-      phase: "Phase 1 - Content Proof",
-      overall_percent: 0,
-      achieved_percent: 0,
-      remaining_percent: 100,
-      eta_days: 0,
-      currently_ongoing: [],
-      upcoming: [],
-      remaining_work: []
-    };
+    return fallback;
   }
 }
 
-function html(status) {
-  const statusJson = JSON.stringify(status).replace(/</g, "\\u003c");
+function loadData() {
+  const status = readJson(statusPath, {
+    last_updated: new Date().toISOString(),
+    phase: "Phase 1 - Content Proof",
+    overall_percent: 0,
+    achieved_percent: 0,
+    remaining_percent: 100,
+    eta_days: 0,
+    currently_ongoing: [],
+    upcoming: [],
+    remaining_work: []
+  });
+
+  const content = readJson(contentPath, {
+    generated_at: new Date().toISOString(),
+    hero: {
+      title: "KHOJ STEAM School",
+      tagline: "Where Curiosity Finds Discovery",
+      description: "Discovery-first learning for Pakistani children."
+    },
+    latest_cards: [],
+    mission_of_day: {
+      title: "Mission of the day",
+      body: "Content publishing cycle in progress.",
+      duration_min: 10,
+      age_group: "Nano"
+    }
+  });
+
+  return { status, content };
+}
+
+function renderProductPage({ status, content }) {
+  const cardsHtml = (content.latest_cards || [])
+    .map(
+      (card, idx) => `
+      <article class="card reveal" style="animation-delay:${idx * 90}ms">
+        <p class="chip">Discovery ${idx + 1}</p>
+        <h3>${card.ur || "-"}</h3>
+        <p class="en">${card.en || ""}</p>
+        <p class="body">${card.summary_ur || ""}</p>
+        <p class="mission"><b>Mission:</b> ${card.mission_ur || ""}</p>
+      </article>
+    `
+    )
+    .join("");
+
+  const ongoingHtml = (status.currently_ongoing || [])
+    .map((item) => `<li>${item}</li>`)
+    .join("");
+
   return `<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>KHOJ Execution Engine</title>
+  <title>KHOJ | AI STEAM School</title>
   <style>
     :root {
-      --bg: #090a11;
-      --card: #121522;
-      --card2: #161a2a;
-      --line: #2c3450;
-      --text: #eef1ff;
-      --muted: #a5aecf;
-      --violet: #7b61ff;
-      --violet2: #9d7bff;
-      --teal: #35d4b0;
-      --amber: #ffbe58;
-      --green: #42dd90;
+      --bg:#070910;
+      --text:#eef1ff;
+      --muted:#a7aecb;
+      --line:#2a3049;
+      --card:#111523;
+      --violet:#7b61ff;
+      --violet2:#9d7bff;
+      --teal:#30d4b2;
+      --amber:#ffbd59;
+      --green:#41dd90;
     }
-    * { box-sizing: border-box; }
+    * { box-sizing:border-box; }
     body {
-      margin: 0;
+      margin:0;
       font-family: Inter, Segoe UI, Arial, sans-serif;
+      color:var(--text);
       background:
-        radial-gradient(900px 500px at -10% -10%, rgba(123,97,255,.25), transparent),
-        radial-gradient(900px 500px at 110% -20%, rgba(53,212,176,.16), transparent),
-        var(--bg);
-      color: var(--text);
+        radial-gradient(1100px 700px at -10% -15%, rgba(123,97,255,.24), transparent),
+        radial-gradient(1000px 700px at 120% -20%, rgba(48,212,178,.14), transparent),
+        linear-gradient(180deg,#06070d,#090b13 40%, #070910);
     }
-    .wrap {
-      width: min(1200px, 95vw);
-      margin: 24px auto 42px;
-      display: grid;
-      gap: 16px;
-    }
+    .shell { width:min(1220px,94vw); margin:26px auto 42px; display:grid; gap:14px; }
     .hero {
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      background: linear-gradient(180deg, rgba(20,24,41,.92), rgba(10,13,22,.9));
-      padding: 20px;
-      position: relative;
-      overflow: hidden;
+      border:1px solid var(--line);
+      border-radius:22px;
+      padding:26px;
+      background:linear-gradient(170deg, rgba(17,21,35,.92), rgba(9,12,21,.9));
+      position:relative; overflow:hidden;
     }
-    .hero::after {
-      content: "";
-      position: absolute;
-      inset: -30%;
-      background: conic-gradient(from 0deg, transparent, rgba(157,123,255,.24), transparent);
-      animation: spin 9s linear infinite;
-      pointer-events: none;
+    .hero::before {
+      content:"";
+      position:absolute; inset:-40%;
+      background:conic-gradient(from 45deg, transparent, rgba(157,123,255,.23), transparent);
+      animation:spin 11s linear infinite;
+      pointer-events:none;
     }
-    .hero > * { position: relative; z-index: 1; }
-    h1 {
-      margin: 0;
-      font-size: 44px;
-      line-height: 1.05;
-      letter-spacing: -.03em;
-    }
-    .sub { color: var(--muted); margin-top: 8px; font-size: 15px; }
-    .toolbar {
-      margin-top: 14px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-    button, .chip {
-      border: 1px solid var(--line);
-      background: #121728;
-      color: var(--text);
-      border-radius: 999px;
-      padding: 10px 14px;
-      font-size: 13px;
-      cursor: pointer;
-      transition: .2s ease;
-    }
-    button:hover {
-      transform: translateY(-1px);
-      border-color: #5062a6;
-      box-shadow: 0 0 0 1px rgba(123,97,255,.4), 0 10px 30px rgba(123,97,255,.18);
-    }
-    .chip { cursor: default; color: var(--muted); }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 12px;
-    }
+    .hero > * { position:relative; z-index:1; }
+    .kicker { text-transform:uppercase; letter-spacing:.2em; font-size:12px; color:var(--muted); }
+    h1 { margin:10px 0 6px; font-size:58px; line-height:1; letter-spacing:-.035em; }
+    .tag { margin:0; color:#d2d7ef; font-size:21px; }
+    .desc { margin:10px 0 0; color:var(--muted); max-width:760px; font-size:15px; }
+    .hero-grid { margin-top:18px; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; }
+    .metric { border:1px solid var(--line); border-radius:14px; padding:12px; background:rgba(13,16,28,.7); }
+    .metric .l { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.13em; }
+    .metric .v { margin-top:6px; font-size:30px; font-weight:700; }
+    .v1 { color:var(--violet2); } .v2 { color:var(--teal); } .v3 { color:var(--green); } .v4 { color:var(--amber); }
+    .section { border:1px solid var(--line); border-radius:18px; background:linear-gradient(180deg,rgba(17,21,35,.88),rgba(11,14,24,.92)); padding:18px; }
+    .h2 { margin:0 0 12px; font-size:28px; letter-spacing:-.02em; }
+    .cards { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; }
     .card {
-      background: linear-gradient(180deg, rgba(20,24,41,.88), rgba(12,16,28,.92));
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      padding: 14px;
+      border:1px solid var(--line); border-radius:14px; padding:13px;
+      background:linear-gradient(180deg,rgba(17,20,33,.9),rgba(9,12,21,.96));
+      transform:translateY(8px); opacity:0; animation:rise .6s ease forwards;
     }
-    .k {
-      color: var(--muted);
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: .13em;
+    .chip {
+      display:inline-block; border:1px solid #47508c; border-radius:999px; padding:4px 9px;
+      color:#cad0ea; font-size:11px; text-transform:uppercase; letter-spacing:.08em;
     }
-    .v { margin-top: 8px; font-size: 34px; font-weight: 700; }
-    .t-violet { color: var(--violet2); }
-    .t-teal { color: var(--teal); }
-    .t-amber { color: var(--amber); }
-    .t-green { color: var(--green); }
-    .panes {
-      display: grid;
-      grid-template-columns: 1.3fr 1fr 1fr;
-      gap: 12px;
+    .card h3 { margin:10px 0 6px; font-size:23px; line-height:1.3; }
+    .card .en { margin:0; color:#d4dcff; font-size:13px; opacity:.9; }
+    .card .body { margin:10px 0; color:var(--muted); font-size:14px; line-height:1.5; }
+    .mission { margin:0; color:#c7ffe9; font-size:13px; }
+    .panel-grid { display:grid; grid-template-columns:1.3fr 1fr; gap:10px; }
+    ul { margin:0; padding:0; list-style:none; display:grid; gap:8px; }
+    li { border:1px solid var(--line); border-radius:10px; padding:10px; color:var(--muted); background:rgba(10,13,23,.65); }
+    .track { margin-top:8px; height:11px; border-radius:999px; background:#0b1020; border:1px solid #1f2842; overflow:hidden; }
+    .track span {
+      display:block; height:100%; background:linear-gradient(90deg,var(--teal),var(--violet2));
+      width:${status.achieved_percent || 0}%; position:relative;
     }
-    .panel-title {
-      margin: 0 0 10px;
-      font-size: 22px;
+    .track span::after {
+      content:""; position:absolute; inset:0; transform:translateX(-120%);
+      background:linear-gradient(100deg,transparent,rgba(255,255,255,.35),transparent); animation:glow 2.2s linear infinite;
     }
-    ul {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-      display: grid;
-      gap: 8px;
+    .small { color:var(--muted); font-size:13px; margin-top:8px; }
+    .cta { margin-top:12px; display:flex; gap:10px; flex-wrap:wrap; }
+    a.btn {
+      border:1px solid var(--line); border-radius:999px; padding:10px 13px; text-decoration:none; color:var(--text);
+      background:#131829; font-size:13px; transition:.2s ease;
     }
-    li {
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      padding: 10px 11px;
-      color: var(--muted);
-      background: rgba(11,14,25,.6);
+    a.btn:hover { transform:translateY(-1px); box-shadow:0 0 0 1px rgba(123,97,255,.35),0 10px 24px rgba(123,97,255,.2); }
+    footer { text-align:center; color:var(--muted); font-size:12px; padding:8px 0 2px; }
+    @media (max-width:980px) {
+      h1 { font-size:40px; }
+      .hero-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .cards { grid-template-columns:1fr; }
+      .panel-grid { grid-template-columns:1fr; }
     }
-    .track {
-      margin-top: 10px;
-      height: 10px;
-      border-radius: 999px;
-      background: #0c1120;
-      overflow: hidden;
-      border: 1px solid #1c2641;
-    }
-    .track > span {
-      display: block;
-      height: 100%;
-      background: linear-gradient(90deg, var(--teal), var(--violet2));
-      width: 0;
-      transition: width .8s ease;
-      position: relative;
-    }
-    .track > span::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      transform: translateX(-120%);
-      background: linear-gradient(100deg, transparent, rgba(255,255,255,.34), transparent);
-      animation: gleam 2.2s linear infinite;
-    }
-    .split {
-      margin-top: 10px;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
-    .badge {
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      padding: 10px;
-      background: rgba(11,14,25,.6);
-      color: var(--muted);
-      font-size: 13px;
-    }
-    .badge b { display: block; margin-top: 4px; font-size: 22px; color: var(--text); }
-    .mini {
-      color: var(--muted);
-      font-size: 13px;
-      margin-top: 8px;
-      word-break: break-word;
-    }
-    @media (max-width: 960px) {
-      h1 { font-size: 34px; }
-      .grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
-      .panes { grid-template-columns: 1fr; }
-    }
-    @keyframes spin { to { transform: rotate(1turn); } }
-    @keyframes gleam { to { transform: translateX(120%); } }
+    @keyframes spin { to { transform:rotate(1turn); } }
+    @keyframes glow { to { transform:translateX(120%); } }
+    @keyframes rise { to { transform:translateY(0); opacity:1; } }
   </style>
 </head>
 <body>
-  <div class="wrap">
+  <div class="shell">
     <section class="hero">
-      <h1>KHOJ Execution Engine</h1>
-      <p class="sub">Autonomous orchestration service for Executor, Tracker, and Reporter workers.</p>
-      <div class="toolbar">
-        <button id="runCycle">Run Cycle Now</button>
-        <button id="refresh">Refresh Status</button>
-        <span class="chip">Endpoints: /health • /status • /run-cycle</span>
+      <p class="kicker">KHOJ STEAM SCHOOL</p>
+      <h1>${content.hero?.title || "KHOJ STEAM School"}</h1>
+      <p class="tag">${content.hero?.tagline || "Where Curiosity Finds Discovery"}</p>
+      <p class="desc">${content.hero?.description || ""}</p>
+      <div class="hero-grid">
+        <article class="metric"><div class="l">Phase</div><div class="v v1">${status.phase || "-"}</div></article>
+        <article class="metric"><div class="l">Overall</div><div class="v v2">${status.overall_percent || 0}%</div></article>
+        <article class="metric"><div class="l">Achieved</div><div class="v v3">${status.achieved_percent || 0}%</div></article>
+        <article class="metric"><div class="l">ETA</div><div class="v v4">${status.eta_days || 0} Days</div></article>
       </div>
-      <p id="lastAction" class="mini">Ready.</p>
     </section>
 
-    <section class="grid">
-      <article class="card"><div class="k">Overall Completion</div><div id="overall" class="v t-violet">0%</div></article>
-      <article class="card"><div class="k">Current Phase</div><div id="phase" class="v t-teal">-</div></article>
-      <article class="card"><div class="k">Achieved</div><div id="achieved" class="v t-green">0%</div></article>
-      <article class="card"><div class="k">ETA</div><div id="eta" class="v t-amber">0 Days</div></article>
+    <section class="section">
+      <h2 class="h2">Latest Discoveries</h2>
+      <div class="cards">
+        ${cardsHtml || "<p>No cards generated yet.</p>"}
+      </div>
     </section>
 
-    <section class="panes">
-      <article class="card">
-        <h2 class="panel-title">Progress</h2>
-        <div class="k">Achieved vs Remaining</div>
-        <div class="track"><span id="progBar"></span></div>
-        <div class="split">
-          <div class="badge">Achieved<b id="achievedMini">0%</b></div>
-          <div class="badge">Remaining<b id="remainingMini">0%</b></div>
+    <section class="section panel-grid">
+      <article>
+        <h2 class="h2">Mission of the Day</h2>
+        <ul>
+          <li><b>${content.mission_of_day?.title || "Mission"}</b><br>${content.mission_of_day?.body || "-"}</li>
+          <li>Duration: ${content.mission_of_day?.duration_min || 10} min</li>
+          <li>Age Group: ${content.mission_of_day?.age_group || "Nano"}</li>
+        </ul>
+        <div class="cta">
+          <a class="btn" href="/status">Live JSON Status</a>
+          <a class="btn" href="/ops">Ops Console</a>
+          <a class="btn" href="https://lab.zuhaib.pro/khoj" target="_blank" rel="noreferrer">Tracking Control Tower</a>
         </div>
-        <p id="updated" class="mini"></p>
       </article>
-
-      <article class="card">
-        <h2 class="panel-title">Currently Ongoing</h2>
-        <ul id="ongoing"></ul>
-      </article>
-
-      <article class="card">
-        <h2 class="panel-title">Upcoming</h2>
-        <ul id="upcoming"></ul>
+      <article>
+        <h2 class="h2">Execution Pulse</h2>
+        <div class="track"><span></span></div>
+        <p class="small">Last updated: ${status.last_updated || "-"}</p>
+        <h3 style="margin:14px 0 8px;font-size:16px">Currently Ongoing</h3>
+        <ul>${ongoingHtml || "<li>No ongoing tasks</li>"}</ul>
       </article>
     </section>
+
+    <footer>Auto-generated by KHOJ autonomy engine • Updated ${content.generated_at || "-"}</footer>
   </div>
-
-  <script id="statusSeed" type="application/json">${statusJson}</script>
-  <script>
-    const seed = JSON.parse(document.getElementById("statusSeed").textContent || "{}");
-    const byId = (id) => document.getElementById(id);
-
-    function setList(id, items) {
-      const el = byId(id);
-      el.innerHTML = "";
-      (items || []).forEach((x) => {
-        const li = document.createElement("li");
-        li.textContent = x;
-        el.appendChild(li);
-      });
-      if (!items || !items.length) {
-        const li = document.createElement("li");
-        li.textContent = "No items yet.";
-        el.appendChild(li);
-      }
-    }
-
-    function render(s) {
-      byId("overall").textContent = (s.overall_percent ?? 0) + "%";
-      byId("phase").textContent = (s.phase || "-").split("-")[0].trim();
-      byId("achieved").textContent = (s.achieved_percent ?? 0) + "%";
-      byId("eta").textContent = (s.eta_days ?? 0) + " Days";
-      byId("achievedMini").textContent = (s.achieved_percent ?? 0) + "%";
-      byId("remainingMini").textContent = (s.remaining_percent ?? 0) + "%";
-      byId("updated").textContent = "Last updated: " + (s.last_updated || "-");
-      byId("progBar").style.width = (s.achieved_percent ?? 0) + "%";
-      setList("ongoing", s.currently_ongoing || []);
-      setList("upcoming", s.upcoming || []);
-    }
-
-    async function refreshStatus() {
-      try {
-        const res = await fetch("/status", { cache: "no-store" });
-        const data = await res.json();
-        render(data);
-        byId("lastAction").textContent = "Status refreshed successfully.";
-      } catch (e) {
-        byId("lastAction").textContent = "Refresh failed: " + String(e.message || e);
-      }
-    }
-
-    async function runCycle() {
-      byId("lastAction").textContent = "Running executor -> tracker -> reporter...";
-      try {
-        const res = await fetch("/run-cycle", { method: "POST" });
-        const data = await res.json();
-        byId("lastAction").textContent = data.ok
-          ? "Cycle completed successfully."
-          : "Cycle failed.";
-        await refreshStatus();
-      } catch (e) {
-        byId("lastAction").textContent = "Run-cycle failed: " + String(e.message || e);
-      }
-    }
-
-    byId("refresh").addEventListener("click", refreshStatus);
-    byId("runCycle").addEventListener("click", runCycle);
-
-    render(seed);
-    setInterval(refreshStatus, 30000);
-  </script>
 </body>
 </html>`;
 }
 
+function renderOpsPage(status) {
+  const data = JSON.stringify(status, null, 2).replace(/</g, "\\u003c");
+  return `<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>KHOJ Ops Console</title>
+<style>body{font-family:Inter,Segoe UI,Arial,sans-serif;background:#0b0d14;color:#e8ecff;margin:0;padding:20px}button{padding:10px 12px;border-radius:10px;border:1px solid #344065;background:#171e35;color:#fff;cursor:pointer}pre{white-space:pre-wrap;background:#111523;border:1px solid #2b3557;border-radius:12px;padding:12px}a{color:#9bb4ff}</style>
+</head>
+<body>
+<h1>KHOJ Ops Console</h1>
+<p><a href="/">Back to Product View</a></p>
+<form method="post" action="/run-cycle"><button type="submit">Run Cycle Now</button></form>
+<h2>Status Snapshot</h2>
+<pre>${data}</pre>
+</body></html>`;
+}
+
 const server = http.createServer((req, res) => {
   try {
+    const data = loadData();
+
     if (req.url === "/") {
       res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
-      return res.end(html(readStatus()));
+      return res.end(renderProductPage(data));
+    }
+
+    if (req.url === "/ops") {
+      res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+      return res.end(renderOpsPage(data.status));
     }
 
     if (req.url === "/health") {
@@ -335,16 +257,34 @@ const server = http.createServer((req, res) => {
       return res.end(JSON.stringify({ ok: true, service: "khoj-executor" }));
     }
 
-    if (req.url === "/run-cycle" && req.method === "POST") {
+    if (req.url === "/run-cycle" && (req.method === "POST" || req.method === "GET")) {
       run("node ops/scripts/run_executor.js");
       run("node ops/scripts/run_tracker.js");
+      run("node ops/scripts/run_publish.js");
       run("node ops/scripts/run_reporter.js");
+
+      if (req.method === "POST") {
+        res.writeHead(302, { Location: "/ops" });
+        return res.end();
+      }
+
       res.writeHead(200, { "Content-Type": "application/json" });
-      return res.end(JSON.stringify({ ok: true, ran: "executor+tracker+reporter" }));
+      return res.end(
+        JSON.stringify({
+          ok: true,
+          ran: "executor+tracker+publish+reporter"
+        })
+      );
     }
 
     if (req.url === "/status") {
       const raw = fs.readFileSync(statusPath, "utf8");
+      res.writeHead(200, { "Content-Type": "application/json" });
+      return res.end(raw);
+    }
+
+    if (req.url === "/content") {
+      const raw = fs.readFileSync(contentPath, "utf8");
       res.writeHead(200, { "Content-Type": "application/json" });
       return res.end(raw);
     }
