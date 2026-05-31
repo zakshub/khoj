@@ -22,5 +22,6 @@ jobs:
             git pull --ff-only origin main
             pnpm install --frozen-lockfile
             pnpm build
-            pm2 restart khoj || pm2 start "pnpm --dir /var/www/khoj exec next start -p 3000" --name khoj
+            pm2 restart khoj || pm2 start "pnpm --dir /var/www/khoj exec next start -p 3002" --name khoj
+            pm2 restart khoj-executor || pm2 start "node /var/www/khoj/ops/service/server.js" --name khoj-executor
             pm2 save
