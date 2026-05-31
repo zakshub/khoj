@@ -4,8 +4,10 @@ const path = require("path");
 const { execSync } = require("child_process");
 
 const root = "/var/www/khoj";
-const statusPath = path.join(root, "public", "data", "status.json");
-const contentPath = path.join(root, "public", "content", "latest.json");
+const statusRuntimePath = path.join(root, "public", "data", "status.runtime.json");
+const statusSeedPath = path.join(root, "public", "data", "status.json");
+const contentRuntimePath = path.join(root, "public", "content", "latest.runtime.json");
+const contentSeedPath = path.join(root, "public", "content", "latest.json");
 
 function run(cmd) {
   return execSync(cmd, { cwd: root, stdio: "pipe" }).toString();
@@ -20,7 +22,7 @@ function readJson(filePath, fallback) {
 }
 
 function loadData() {
-  const status = readJson(statusPath, {
+  const status = readJson(statusRuntimePath, readJson(statusSeedPath, {
     last_updated: new Date().toISOString(),
     phase: "Phase 1 - Content Proof",
     overall_percent: 0,
@@ -30,9 +32,9 @@ function loadData() {
     currently_ongoing: [],
     upcoming: [],
     remaining_work: []
-  });
+  }));
 
-  const content = readJson(contentPath, {
+  const content = readJson(contentRuntimePath, readJson(contentSeedPath, {
     generated_at: new Date().toISOString(),
     hero: {
       title: "KHOJ STEAM School",
@@ -46,7 +48,7 @@ function loadData() {
       duration_min: 10,
       age_group: "Nano"
     }
-  });
+  }));
 
   return { status, content };
 }
@@ -57,10 +59,10 @@ function renderProductPage({ status, content }) {
       (card, idx) => `
       <article class="card reveal" style="animation-delay:${idx * 90}ms">
         <p class="chip">Discovery ${idx + 1}</p>
-        <h3>${card.ur || "-"}</h3>
+        <h3 class="urdu-rtl" lang="ur" dir="rtl">${card.ur || "-"}</h3>
         <p class="en">${card.en || ""}</p>
-        <p class="body">${card.summary_ur || ""}</p>
-        <p class="mission"><b>Mission:</b> ${card.mission_ur || ""}</p>
+        <p class="body urdu-rtl" lang="ur" dir="rtl">${card.summary_ur || ""}</p>
+        <p class="mission urdu-rtl" lang="ur" dir="rtl"><b>مشن:</b> ${card.mission_ur || ""}</p>
       </article>
     `
     )
@@ -77,6 +79,7 @@ function renderProductPage({ status, content }) {
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>KHOJ | AI STEAM School</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&family=Noto+Sans+Arabic:wght@400;500;700&display=swap');
     :root {
       --bg:#070910;
       --text:#eef1ff;
@@ -98,6 +101,12 @@ function renderProductPage({ status, content }) {
         radial-gradient(1100px 700px at -10% -15%, rgba(123,97,255,.24), transparent),
         radial-gradient(1000px 700px at 120% -20%, rgba(48,212,178,.14), transparent),
         linear-gradient(180deg,#06070d,#090b13 40%, #070910);
+    }
+    .urdu-rtl {
+      direction: rtl;
+      text-align: right;
+      font-family: "Tajawal", "Noto Sans Arabic", "Cairo", "Dubai", "Segoe UI", sans-serif;
+      line-height: 1.7;
     }
     .shell { width:min(1220px,94vw); margin:26px auto 42px; display:grid; gap:14px; }
     .hero {
@@ -197,7 +206,7 @@ function renderProductPage({ status, content }) {
       <article>
         <h2 class="h2">Mission of the Day</h2>
         <ul>
-          <li><b>${content.mission_of_day?.title || "Mission"}</b><br>${content.mission_of_day?.body || "-"}</li>
+          <li class="urdu-rtl" lang="ur" dir="rtl"><b>${content.mission_of_day?.title || "مشن"}</b><br>${content.mission_of_day?.body || "-"}</li>
           <li>Duration: ${content.mission_of_day?.duration_min || 10} min</li>
           <li>Age Group: ${content.mission_of_day?.age_group || "Nano"}</li>
         </ul>
@@ -278,13 +287,15 @@ const server = http.createServer((req, res) => {
     }
 
     if (req.url === "/status") {
-      const raw = fs.readFileSync(statusPath, "utf8");
+      const source = fs.existsSync(statusRuntimePath) ? statusRuntimePath : statusSeedPath;
+      const raw = fs.readFileSync(source, "utf8");
       res.writeHead(200, { "Content-Type": "application/json" });
       return res.end(raw);
     }
 
     if (req.url === "/content") {
-      const raw = fs.readFileSync(contentPath, "utf8");
+      const source = fs.existsSync(contentRuntimePath) ? contentRuntimePath : contentSeedPath;
+      const raw = fs.readFileSync(source, "utf8");
       res.writeHead(200, { "Content-Type": "application/json" });
       return res.end(raw);
     }

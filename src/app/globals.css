@@ -27,6 +27,14 @@ body {
   font-family: var(--font-geist-sans), "Segoe UI", sans-serif;
 }
 
+.urdu-rtl,
+[lang="ur"] {
+  direction: rtl;
+  text-align: right;
+  font-family: var(--font-arabic-sans), "Noto Sans Arabic", "Tajawal", "Cairo", "Dubai", "Segoe UI", sans-serif;
+  font-feature-settings: "kern" 1;
+}
+
 .portal-shell {
   min-height: 100vh;
   background:
